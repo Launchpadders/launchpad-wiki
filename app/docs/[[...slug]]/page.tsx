@@ -9,11 +9,14 @@ import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/mdx-components';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
+import { redirect } from 'next/navigation';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
   const page = source.getPage(params.slug);
-  if (!page) notFound();
+  if (!page) {
+    redirect('/start');
+  }
 
   const MDX = page.data.body;
 
@@ -28,6 +31,8 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
             a: createRelativeLink(source, page),
           })}
         />
+        <br/>
+        <br/>
       </DocsBody>
     </DocsPage>
   );

@@ -1,0 +1,20 @@
+{
+  "title": "Create",
+  "description": "Get started with creating your own performances.",
+  "icon": "PencilRuler",
+  "root": true,
+  "pages": [
+    "index",
+    "music-production",
+    "---Performances---",
+    "performances/index",
+    "performances/samples",
+    "performances/lights",
+    "---Music Production---",
+    "music/intro",
+    "...music",
+    "---Tutorials---",
+    "tutorials/overview",
+    "...tutorials"
+  ]
+}

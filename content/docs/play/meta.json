@@ -1,0 +1,21 @@
+{
+    "title": "Play",
+    "description": "Enjoy your Launchpad with pre-made projects.",
+    "icon": "Gamepad2",
+    "root": true,
+    "pages": [
+        "index",
+        "---Introduction---",
+        "play-intro",
+        "finding-projects",
+        "---Setup---",
+        "setup/basic",
+        "...setup",
+        "---Skills---",
+        "...skills",
+        "---Project Gallery---",
+        "projects/beginner-projects",
+        "projects/intermediate-projects",
+        "projects/expert-projects"
+    ]
+}
