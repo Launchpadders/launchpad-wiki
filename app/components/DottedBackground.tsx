@@ -16,6 +16,7 @@ type Pulse = {
     x: number;
     y: number;
   };
+  hue: number;
 };
 
 export function DottedBackground() {
@@ -79,6 +80,7 @@ export function DottedBackground() {
           pulses.push({
             start: now,
             origin,
+            hue: p.random(190, 320),
           });
           lastPulse = now;
         }
@@ -105,10 +107,13 @@ export function DottedBackground() {
             const noise = p.noise(x * 0.01, y * 0.01, now * 0.0003) * 0.15;
             intensity = Math.min(intensity + noise, 1.4);
 
-            const hue = p.map(intensity, 0, 1.4, 195, 215);
-            const sat = p.map(intensity, 0, 1.4, 25, 85);
-            const light = p.map(intensity, 0, 1.4, 10, 70);
-            const alpha = p.map(intensity, 0, 1.4, 0.05, 0.9);
+            const pulseHue = pulses.length
+              ? pulses.reduce((acc, pulse) => acc + pulse.hue, 0) / pulses.length
+              : 210;
+            const hue = p.map(intensity, 0, 1.4, pulseHue - 15, pulseHue + 25);
+            const sat = p.map(intensity, 0, 1.4, 30, 90);
+            const light = p.map(intensity, 0, 1.4, 12, 72);
+            const alpha = p.map(intensity, 0, 1.4, 0.04, 0.92);
 
             p.fill(hue, sat, light, alpha);
             p.rect(x, y, SQUARE_SIZE, SQUARE_SIZE, 6);
@@ -151,6 +156,7 @@ export function DottedBackground() {
         pulses.push({
           start: instance.millis(),
           origin: { x: relativeX, y: relativeY },
+          hue: instance.random(200, 320),
         });
       };
 
