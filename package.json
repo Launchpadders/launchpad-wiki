@@ -12,6 +12,8 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@p5-wrapper/next": "^2.0.0",
+    "@p5-wrapper/react": "^4.4.2",
     "fumadocs-core": "16.0.12",
     "fumadocs-mdx": "14.0.0",
     "fumadocs-ui": "16.0.12",

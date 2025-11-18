@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import p5 from "p5";
+import type p5 from "p5";
 
 const CELL_SIZE = 56;
 const SQUARE_SIZE = CELL_SIZE * 0.65;
@@ -31,6 +31,9 @@ export function DottedBackground() {
     }
 
     let animationFrame = 0;
+    let resizeObserver: ResizeObserver | null = null;
+    let instance: p5 | null = null;
+    let disposed = false;
 
     const pulses: Pulse[] = [];
     let lastPulse = 0;
@@ -111,22 +114,32 @@ export function DottedBackground() {
       };
     };
 
-    const instance = new p5(sketch, container);
+    const startSketch = async () => {
+      const P5 = (await import("p5")).default;
+      if (disposed) {
+        return;
+      }
 
-    const resizeObserver = new ResizeObserver(() => {
-      animationFrame = requestAnimationFrame(() => {
-        if (container && instance) {
-          instance.resizeCanvas(container.clientWidth || 1, container.clientHeight || 1);
-        }
+      instance = new P5(sketch, container);
+
+      resizeObserver = new ResizeObserver(() => {
+        animationFrame = requestAnimationFrame(() => {
+          if (container && instance) {
+            instance.resizeCanvas(container.clientWidth || 1, container.clientHeight || 1);
+          }
+        });
       });
-    });
 
-    resizeObserver.observe(container);
+      resizeObserver.observe(container);
+    };
+
+    startSketch();
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(animationFrame);
-      resizeObserver.disconnect();
-      instance.remove();
+      resizeObserver?.disconnect();
+      instance?.remove();
     };
   }, []);
 
