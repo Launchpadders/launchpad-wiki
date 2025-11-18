@@ -253,7 +253,7 @@ function detectProjectType(
     id: 'classic-max',
     label: 'Classic Max for Live Project',
     description:
-      'Uses general Max for Live devices for samples and potentially lights (Wormhole, Lightweight, etc.).',
+      'Uses general Max for Live devices (Wormhole, Lightweight, etc.) for samples and lights.',
     setupLink: '/docs/create/performances/lights/index',
     pluginCount,
     criteria: [

@@ -84,7 +84,7 @@ export function AlsUploadAnalyzer() {
     }
   }, []);
 
-  const onDrop = useCallback<React.DragEventHandler<HTMLButtonElement>>(
+  const onDrop = useCallback<React.DragEventHandler<HTMLDivElement>>(
     (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -94,7 +94,7 @@ export function AlsUploadAnalyzer() {
     [handleFiles],
   );
 
-  const onDragOver = useCallback<React.DragEventHandler<HTMLButtonElement>>(
+  const onDragOver = useCallback<React.DragEventHandler<HTMLDivElement>>(
     (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -103,7 +103,7 @@ export function AlsUploadAnalyzer() {
     [],
   );
 
-  const onDragLeave = useCallback<React.DragEventHandler<HTMLButtonElement>>(
+  const onDragLeave = useCallback<React.DragEventHandler<HTMLDivElement>>(
     (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -131,7 +131,12 @@ export function AlsUploadAnalyzer() {
     <div className="space-y-4">
       <div className="relative">
         <div
-          className={`pointer-events-none flex flex-col items-center justify-center border-2 border-dashed rounded-xl px-6 py-10 text-center transition-colors ${
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          role="button"
+          tabIndex={-1}
+          className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl px-6 py-10 text-center transition-colors ${
             isDragging
               ? 'border-fd-primary bg-fd-primary/5'
               : 'border-fd-border bg-fd-card'
@@ -152,14 +157,6 @@ export function AlsUploadAnalyzer() {
             Choose file
           </label>
         </div>
-        <button
-          type="button"
-          aria-label="Upload Ableton .als project file"
-          className="absolute inset-0 cursor-pointer border-0 bg-transparent p-0"
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-        />
       </div>
 
       {status.kind === 'parsing' && (
