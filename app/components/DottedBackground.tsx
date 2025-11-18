@@ -12,7 +12,10 @@ const FADE_TRAIL = 0.08;
 
 type Pulse = {
   start: number;
-  origin: p5.Vector;
+  origin: {
+    x: number;
+    y: number;
+  };
 };
 
 export function DottedBackground() {
@@ -35,7 +38,7 @@ export function DottedBackground() {
     let instance: p5 | null = null;
     let disposed = false;
 
-    const pulses: Pulse[] = [];
+  const pulses: Pulse[] = [];
     let lastPulse = 0;
 
     const sketch = (p: p5) => {
@@ -69,10 +72,10 @@ export function DottedBackground() {
         const now = p.millis();
 
         if (now - lastPulse > PULSE_INTERVAL) {
-          const origin = p.createVector(
-            p.random(p.width * 0.25, p.width * 0.75),
-            p.random(p.height * 0.25, p.height * 0.75),
-          );
+          const origin = {
+            x: p.random(p.width * 0.25, p.width * 0.75),
+            y: p.random(p.height * 0.25, p.height * 0.75),
+          };
           pulses.push({
             start: now,
             origin,
@@ -114,6 +117,8 @@ export function DottedBackground() {
       };
     };
 
+    let cleanupPointer: (() => void) | undefined;
+
     const startSketch = async () => {
       const P5 = (await import("p5")).default;
       if (disposed) {
@@ -121,6 +126,33 @@ export function DottedBackground() {
       }
 
       instance = new P5(sketch, container);
+
+      const handlePointerDown = (event: PointerEvent) => {
+        if (!container || !instance) {
+          return;
+        }
+
+        const rect = container.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+          return;
+        }
+
+        const relativeX = ((event.clientX - rect.left) / rect.width) * instance.width;
+        const relativeY = ((event.clientY - rect.top) / rect.height) * instance.height;
+
+        if (Number.isNaN(relativeX) || Number.isNaN(relativeY)) {
+          return;
+        }
+
+        if (relativeX < 0 || relativeY < 0 || relativeX > instance.width || relativeY > instance.height) {
+          return;
+        }
+
+        pulses.push({
+          start: instance.millis(),
+          origin: { x: relativeX, y: relativeY },
+        });
+      };
 
       resizeObserver = new ResizeObserver(() => {
         animationFrame = requestAnimationFrame(() => {
@@ -131,6 +163,9 @@ export function DottedBackground() {
       });
 
       resizeObserver.observe(container);
+
+      window.addEventListener("pointerdown", handlePointerDown);
+      cleanupPointer = () => window.removeEventListener("pointerdown", handlePointerDown);
     };
 
     startSketch();
@@ -140,6 +175,7 @@ export function DottedBackground() {
       cancelAnimationFrame(animationFrame);
       resizeObserver?.disconnect();
       instance?.remove();
+      cleanupPointer?.();
     };
   }, []);
 
