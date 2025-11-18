@@ -21,6 +21,8 @@ export type AnalyzedProject = {
   plugins: PluginInstallInstruction[];
   /** Plugins that actually require additional setup, based on hash+rules */
   setupPlugins: PluginInstallInstruction[];
+  /** Best-effort detection of the overall project type */
+  projectType: ProjectTypeSummary;
   rawPluginFiles: string[];
 };
 
@@ -33,6 +35,27 @@ export type PluginSetupRule = {
   setupRequired: boolean;
   /** Description of setup steps to show in the UI */
   setupDescription: string;
+};
+
+export type ProjectTypeId =
+  | 'apollo-studio'
+  | 'chain-or-apollo'
+  | 'legacy-midiext'
+  | 'modern-input-manager'
+  | 'classic-max';
+
+export type ProjectTypeCriterion = {
+  label: string;
+  matched: boolean;
+};
+
+export type ProjectTypeSummary = {
+  id: ProjectTypeId;
+  label: string;
+  description: string;
+  setupLink: string;
+  criteria: ProjectTypeCriterion[];
+  pluginCount: number;
 };
 
 export function computeFileHash(input: string): string {
@@ -78,13 +101,18 @@ export function normalizePluginBaseName(fileName: string): string {
   return lower.replace(/\.amxd$/i, '').trim();
 }
 
-/** Extract all substrings that look like Max for Live device files ("*.amxd"). */
+/** Extract .amxd filenames declared as `<Name Value="...">` nodes (ignoring file paths). */
 export function extractAmxdFileNames(xmlText: string): string[] {
-  const regex = /([A-Za-z0-9_\- ]+\.amxd)/g;
   const matches: string[] = [];
+  const nameValueRegex =
+    /<Name\b[^>]*\bValue\s*=\s*(?:"([^"<>]*?\.amxd)"|'([^'<>]*?\.amxd)')[^>]*?>/gi;
 
-  for (const match of xmlText.matchAll(regex)) {
-    if (match[1]) matches.push(match[1]);
+  for (const match of xmlText.matchAll(nameValueRegex)) {
+    const rawValue = match[1] ?? match[2];
+    const value = rawValue?.trim();
+    if (!value) continue;
+    if (/[\\/]/.test(value)) continue; // skip path-like entries
+    matches.push(value);
   }
 
   // de-duplicate while preserving order
@@ -133,14 +161,110 @@ export const pluginSetupRules: PluginSetupRule[] = [
   {
     namePattern: /Depths*/i,
     setupRequired: false,
-    setupDescription: ""
+    setupDescription:
+      'Depths device detected – make sure the custom Max for Live device is installed in your User Library before opening the project.',
   },
   {
     namePattern: /Twist*/i,
     setupRequired: false,
-    setupDescription: ""
+    setupDescription:
+      'Twist device detected – ensure the Max for Live file is available so Ableton can load the visual effect correctly.',
   }
 ];
+
+function detectProjectType(
+  xmlText: string,
+  plugins: PluginInstallInstruction[],
+): ProjectTypeSummary {
+  const pluginCount = plugins.length;
+  const hasMaxPlugins = pluginCount > 0;
+  const hasMidiTrack = /MidiTrack/i.test(xmlText);
+  const normalizedPluginNames = plugins.map((plugin) =>
+    plugin.id.baseName.toLowerCase(),
+  );
+  const hasMidiExtension = normalizedPluginNames.some(
+    (name) => name.trim() === 'midi extension',
+  );
+  const hasMidiManagerPlugin = normalizedPluginNames.some((name) =>
+    name.includes('midi manager') || name.includes('input manager'),
+  );
+  const lowerXml = xmlText.toLowerCase();
+  const hasMidiManagerKeyword =
+    /midi\s*manager/i.test(lowerXml) || /input\s*manager/i.test(lowerXml);
+  const hasInputManager = hasMidiManagerPlugin || hasMidiManagerKeyword;
+
+  if (!hasMaxPlugins) {
+    const isApollo = !hasMidiTrack;
+    return {
+      id: isApollo ? 'apollo-studio' : 'chain-or-apollo',
+      label: isApollo ? 'Apollo Studio Project' : 'Chain Lights or Apollo Project',
+      description: isApollo
+        ? 'No Max for Live devices or MIDI tracks detected. Most likely the light effects are handled via Apollo Studio.'
+        : 'No Max for Live devices detected, but MIDI tracks are present, this is typical for Chain Lights (or combinations with Apollo + Chain Lights).',
+      setupLink: isApollo
+        ? '/docs/create/performances/lights/apollo'
+        : '/docs/create/performances/lights/index',
+      pluginCount,
+      criteria: [
+        { label: '0 Max for Live plugins detected', matched: true },
+        {
+          label: 'No MIDI tracks detected (Apollo-style export)',
+          matched: !hasMidiTrack,
+        },
+        { label: 'Contains MIDI tracks', matched: hasMidiTrack },
+      ],
+    };
+  }
+
+  if (hasMidiExtension) {
+    return {
+      id: 'legacy-midiext',
+      label: 'Legacy MIDIext Project',
+      description:
+        "Contains the classic 'Midi Extension' device by Exige, typical for older projects (before 2018).",
+      setupLink: '/docs/create/performances/lights/midiext',
+      pluginCount,
+      criteria: [
+        { label: "Plugin named 'Midi Extension' detected", matched: true },
+        { label: 'Max for Live devices present', matched: true },
+      ],
+    };
+  }
+
+  if (hasInputManager) {
+    return {
+      id: 'modern-input-manager',
+      label: 'Modern Kaskobi Project (Input/Midi Manager)',
+      description:
+        'Contains Midi Manager/Input Manager references used by modern Kaskobi projects (and a few others).',
+      setupLink: '/docs/create/tutorials/kaskobi',
+      pluginCount,
+      criteria: [
+        {
+          label: "Contains 'Midi Manager' or 'Input Manager'",
+          matched: true,
+        },
+        { label: 'Max for Live devices present', matched: true },
+      ],
+    };
+  }
+
+  return {
+    id: 'classic-max',
+    label: 'Classic Max for Live Project',
+    description:
+      'Uses general Max for Live devices for samples and potentially lights (Wormhole, Lightweight, etc.).',
+    setupLink: '/docs/create/performances/lights/index',
+    pluginCount,
+    criteria: [
+      { label: 'Max for Live devices present', matched: true },
+      {
+        label: 'No specific Midi Extension/Input Manager signatures',
+        matched: !hasMidiExtension && !hasInputManager,
+      },
+    ],
+  };
+}
 
 export function analyzePluginsFromXml(xmlText: string): AnalyzedProject {
   const files = extractAmxdFileNames(xmlText);
@@ -204,10 +328,12 @@ export function analyzePluginsFromXml(xmlText: string): AnalyzedProject {
   });
 
   const setupPlugins = withHashRules.filter((p) => p.setupRequired);
+  const projectType = detectProjectType(xmlText, withHashRules);
 
   return {
     plugins: withHashRules,
     setupPlugins,
+    projectType,
     rawPluginFiles: files,
   };
 }
