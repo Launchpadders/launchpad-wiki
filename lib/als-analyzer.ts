@@ -201,9 +201,7 @@ function detectProjectType(
       description: isApollo
         ? 'No Max for Live devices or MIDI tracks detected. Most likely the light effects are handled via Apollo Studio.'
         : 'No Max for Live devices detected, but MIDI tracks are present, this is typical for Chain Lights (or combinations with Apollo + Chain Lights).',
-      setupLink: isApollo
-        ? '/docs/create/performances/lights/apollo'
-        : '/docs/create/performances/lights/index',
+      setupLink: '/docs/play/setup/project-types/chain-lights-apollo',
       pluginCount,
       criteria: [
         { label: '0 Max for Live plugins detected', matched: true },
@@ -222,7 +220,7 @@ function detectProjectType(
       label: 'Legacy MIDIext Project',
       description:
         "Contains the classic 'Midi Extension' device by Exige, typical for older projects (before 2018).",
-      setupLink: '/docs/create/performances/lights/midiext',
+      setupLink: '/docs/play/setup/project-types/og-midiext',
       pluginCount,
       criteria: [
         { label: "Plugin named 'Midi Extension' detected", matched: true },
@@ -237,7 +235,7 @@ function detectProjectType(
       label: 'Modern Kaskobi Project (Input/Midi Manager)',
       description:
         'Contains Midi Manager/Input Manager references used by modern Kaskobi projects (and a few others).',
-      setupLink: '/docs/create/tutorials/kaskobi',
+      setupLink: '/docs/play/setup/project-types/kaskobi-midi-manager',
       pluginCount,
       criteria: [
         {
@@ -254,7 +252,7 @@ function detectProjectType(
     label: 'Classic Max for Live Project',
     description:
       'Uses general Max for Live devices (Wormhole, Lightweight, etc.) for samples and lights.',
-    setupLink: '/docs/create/performances/lights/index',
+    setupLink: '/docs/play/setup/project-types/classic-m4l',
     pluginCount,
     criteria: [
       { label: 'Max for Live devices present', matched: true },
