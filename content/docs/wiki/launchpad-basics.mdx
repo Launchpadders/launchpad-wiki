@@ -1,6 +1,6 @@
 ---
 title: Launchpad Basics
-description: Learn how the Novation Launchpad works with an interactive simulator.
+description: Learn how the Novation Launchpad works.
 ---
 
 # Launchpad Basics
@@ -11,18 +11,4 @@ The Novation Launchpad is a grid controller used for music production and perfor
 
 At its core, the Launchpad sends MIDI data to your computer. When you press a pad, it sends a "Note On" message. Your software (like Ableton Live) receives this message and produces sound.
 
-Conversely, the software can send MIDI data *back* to the Launchpad to light up the LEDs. This is how "Light Shows" are created.
-
-## Interactive Simulator
-
-Below is an interactive simulator. The grid below represents a "Piano Roll" in your DAW. You can place notes on the timeline. When the playhead crosses a note, it sends a signal to the **Launchpad** on the left, lighting up the corresponding pad.
-
-<LaunchpadSimulator />
-
-## Grid Layout
-
-The standard Launchpad grid is 8x8 (64 pads).
--   **Rows** often correspond to different sounds in a Drum Rack (e.g., Kick, Snare, Hi-Hat).
--   **Columns** can represent time or different variations.
-
-In this simulator, each row in the sequencer maps to a row on the Launchpad. The column that lights up moves with the beat, creating a scanning effect.
+Conversely, the software can send MIDI data *back* to the Launchpad to light up the LEDs. This is how "Lightshows" are created.
