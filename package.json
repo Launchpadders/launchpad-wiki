@@ -2,10 +2,13 @@
   "name": "launchpad-wiki",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@10.11.1",
   "scripts": {
     "build": "next build",
+    "deploy": "pnpm build && wrangler deploy",
     "dev": "next dev",
-    "start": "next start",
+    "preview": "wrangler dev",
+    "start": "wrangler dev",
     "types:check": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
     "lint": "biome check",
@@ -23,7 +26,11 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp", "workerd"]
+  },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.5",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/mdx": "^2.0.13",
     "@types/node": "^24.10.0",
@@ -32,6 +39,6 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.9.3",
-    "@biomejs/biome": "^2.3.5"
+    "wrangler": "^4.137.0"
   }
 }

@@ -15,6 +15,29 @@ yarn dev
 
 Open http://localhost:3000 with your browser to see the result.
 
+## Cloudflare Workers
+
+The site is exported as static files to `out/` and deployed as Worker static
+assets. The existing Cloudflare Worker is named `launchpad-wiki`.
+
+For the Git-connected Worker, set the build command to `pnpm build` and keep the
+deploy command as `npx wrangler deploy`. The repository uses pnpm, with
+`pnpm-lock.yaml` as its lockfile. Cloudflare will deploy new commits
+automatically.
+
+Set the optional `SITE_URL` build variable if the site gets a custom domain; it
+sets the base URL for social preview images.
+
+For a direct deployment from your computer, log in with `pnpm exec wrangler login`
+(or set `CLOUDFLARE_API_TOKEN`), then run:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm deploy
+```
+
+To preview the built site locally, run `pnpm build` followed by `pnpm preview`.
+
 ## Explore
 
 In the project, you can see:
